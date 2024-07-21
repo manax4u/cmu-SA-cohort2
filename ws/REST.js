@@ -8,14 +8,14 @@
 *   1.0 February 2018 - Initial write of assignment 3 for 2018 architectures course(ajl).
 *
 * Description: This module provides the restful webservices for the Server.js Node server. This module contains GET,
-* and POST services.  
+* and POST services.
 *
-* Parameters: 
+* Parameters:
 *   router - this is the URL from the client
 *   connection - this is the connection to the database
-*   md5 - This is the md5 hashing/parser... included by convention, but not really used 
+*   md5 - This is the md5 hashing/parser... included by convention, but not really used
 *
-* Internal Methods: 
+* Internal Methods:
 *   router.get("/"... - returns the system version information
 *   router.get("/orders"... - returns a listing of everything in the ws_orderinfo database
 *   router.get("/orders/:order_id"... - returns the data associated with order_id
@@ -32,7 +32,7 @@ function REST_ROUTER(router,connection) {
     self.handleRoutes(router,connection);
 }
 
-// Here is where we define the routes. Essentially a route is a path taken through the code dependent upon the 
+// Here is where we define the routes. Essentially a route is a path taken through the code dependent upon the
 // contents of the URL
 
 REST_ROUTER.prototype.handleRoutes= function(router,connection) {
@@ -44,11 +44,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     router.get("/",function(req,res){
         res.json({"Message":"Orders Webservices Server Version 1.0"});
     });
-    
+
     // GET for /orders specifier - returns all orders currently stored in the database
     // req paramdter is the request object
     // res parameter is the response object
-  
+
     router.get("/orders",function(req,res){
         console.log("Getting all database entries..." );
         var query = "SELECT * FROM ??";
@@ -66,7 +66,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     // GET for /orders/order id specifier - returns the order for the provided order ID
     // req paramdter is the request object
     // res parameter is the response object
-     
+
     router.get("/orders/:order_id",function(req,res){
         console.log("Getting order ID: ", req.params.order_id );
         var query = "SELECT * FROM ?? WHERE ??=?";
@@ -83,8 +83,8 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     // POST for /orders?order_date&first_name&last_name&address&phone - adds order
     // req paramdter is the request object - note to get parameters (eg. stuff afer the '?') you must use req.body.param
-    // res parameter is the response object 
-  
+    // res parameter is the response object
+
     router.post("/orders",function(req,res){
         //console.log("url:", req.url);
         //console.log("body:", req.body);
@@ -115,6 +115,25 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
                 res.json({"Error" : true, "Message" : "Error executing MySQL query"});
             } else {
                 res.json({"Error" : false, "Message" : "Success", "Users" : rows});
+            }
+        });
+    });
+
+    // Delete for /orders/order id specifier - deletes the order for the provided order ID
+    // req paramdter is the request object
+    // res parameter is the response object
+
+    router.get("/authenticate/:userid",function(req,res){
+        console.log("Validating credentials: ", req.params.userid );
+        var query = "SELECT password FROM ?? WHERE ??=?";;
+        var table = ["userCredential","user_name",req.params.userid];
+        query = mysql.format(query,table);
+        connection.query(query,function(err,rows){
+            if(err) {
+                res.json({"Error" : true, "Message" : "Error executing MySQL query"});
+            } else {
+
+                res.json({"Error" : false, "Message" : "Success", "password" : rows[0].password});
             }
         });
     });

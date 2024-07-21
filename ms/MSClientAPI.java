@@ -1,254 +1,131 @@
 /******************************************************************************************************************
-* File:OrdersUI.java
-* Course: 17655
-* Project: Assignment A3
-* Copyright: Copyright (c) 2018 Carnegie Mellon University
-* Versions:
-*	1.0 February 2018 - Initial write of assignment 3 (ajl).
-*
-* Description: This class is the console for the an orders database. This interface uses a webservices or microservice
-* client class to update the ms_orderinfo MySQL database. 
-*
-* Parameters: None
-*
-* Internal Methods: None
-*
-* External Dependencies (one of the following):
-*	- MSlientAPI - this class provides an interface to a set of microservices
-*	- RetrieveServices - this is the server-side micro service for retrieving info from the ms_orders database
-*	- CreateServices - this is the server-side micro service for creating new orders in the ms_orders database
-*
-******************************************************************************************************************/
-import java.lang.Exception;
-import java.util.Scanner;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.io.Console;
+ * File: MSClientAPI.java
+ * Course: 17655
+ * Project: Assignment A3
+ * Copyright: Copyright (c) 2018 Carnegie Mellon University
+ * Versions:
+ *	1.0 February 2018 - Initial write of assignment 3 (ajl).
+ *
+ * Description: This class provides access to the webservices via RMI. Users of this class need not worry about the
+ * details of RMI (provided the services are running and registered via rmiregistry).
+ *
+ * Parameters: None
+ *
+ * Internal Methods:
+ *  String retrieveOrders() - gets and returns all the orders in the orderinfo database
+ *  String retrieveOrders(String id) - gets and returns the order associated with the order id
+ *  String newOrder(String Date, String FirstName, String LastName, String Address, String Phone) - creates a new
+ *  order in the orderinfo database
+ *
+ *
+ * External Dependencies: None
+ ******************************************************************************************************************/
+import java.util.Properties;
+import java.io.FileReader;
+import java.io.IOException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
-public class OrdersUI
+public class MSClientAPI
 {
-	public static void main(String args[]) throws Exception
+	String response = null;
+	Properties registry = null;
+
+	public MSClientAPI() throws IOException {
+		// Loads the registry from 'registry.properties'
+		// This files contains entries like:
+		//    <Service> = <host>:<port>
+		// indicating that a service is registered in
+		// an RMI registry at host on port
+		registry = new Properties();
+		registry.load(new FileReader("registry.properties"));
+	}
+
+	/********************************************************************************
+	 * Description: Retrieves all the orders in the orderinfo database. Note
+	 *              that this method is serviced by the RetrieveServices server
+	 *			   process.
+	 * Parameters: None
+	 * Returns: String of all the current orders in the orderinfo database
+	 ********************************************************************************/
+
+	public String retrieveOrders() throws Exception
 	{
-		boolean done = false;						// main loop flag
-		boolean error = false;						// error flag
-		char    option;								// Menu choice from user
-		Console c = System.console();				// Press any key
-		String  date = null;						// order date
-		String  first = null;						// customer first name
-		String  last = null;						// customer last name
-		String  address = null;						// customer address
-		String  phone = null;						// customer phone number
-		String  orderid = null;						// order ID
-		String 	response = null;					// response string from REST 
-		Scanner keyboard = new Scanner(System.in);	// keyboard scanner object for user input
-		DateTimeFormatter dtf = null;				// Date object formatter
-		LocalDate localDate = null;					// Date object
-		MSClientAPI api = new MSClientAPI();	// RESTful api object
+		// Get the registry entry for RetrieveServices service
+		String entry = registry.getProperty("RetrieveServices");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		RetrieveServicesAI obj = (RetrieveServicesAI )reg.lookup("RetrieveServices");
+		response = obj.retrieveOrders();
+		return response;
+	}
 
-		/////////////////////////////////////////////////////////////////////////////////
-		// Main UI loop
-		/////////////////////////////////////////////////////////////////////////////////
+	/********************************************************************************
+	 * Description: Retrieves the order based on the id argument provided from the
+	 *              orderinfo database. Note that this method is serviced by the
+	 *			   RetrieveServices server process.
+	 * Parameters: None
+	 * Returns: String of all the order corresponding to the order id argument
+	 *          in the orderinfo database.
+	 ********************************************************************************/
 
-		while (!done)
-		{	
-			// Here, is the main menu set of choices
+	public String retrieveOrders(String id) throws Exception
+	{
+		// Get the registry entry for RetrieveServices service
+		String entry = registry.getProperty("RetrieveServices");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		RetrieveServicesAI obj = (RetrieveServicesAI )reg.lookup("RetrieveServices");
+		response = obj.retrieveOrders(id);
+		return(response);
 
-			System.out.println( "\n\n\n\n" );
-			System.out.println( "Orders Database User Interface: \n" );
-			System.out.println( "Select an Option: \n" );
-			System.out.println( "1: Retrieve all orders in the order database." );
-			System.out.println( "2: Retrieve an order by ID." );
-			System.out.println( "3: Add a new order to the order database." );
-			System.out.println( "4: Delete a new order from the order database.");
-			System.out.println( "X: Exit\n" );
-			System.out.print( "\n>>>> " );
-			option = keyboard.next().charAt(0);	
-			keyboard.nextLine();	// Removes data from keyboard buffer. If you don't clear the buffer, you blow 
-									// through the next call to nextLine()
+	}
 
-			//////////// option 1 ////////////
+	/********************************************************************************
+	 * Description: Creates the new order to the orderinfo database
+	 * Parameters: None
+	 * Returns: String that contains the status of the create operatation
+	 ********************************************************************************/
 
-			if ( option == '1' )
-			{
-				// Here we retrieve all the orders in the ms_orderinfo database
+	public String newOrder(String Date, String FirstName, String LastName, String Address, String Phone) throws Exception
+	{
+		// Get the registry entry for CreateServices service
+		String entry = registry.getProperty("CreateServices");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		CreateServicesAI obj = (CreateServicesAI) reg.lookup("CreateServices");
+		response = obj.newOrder(Date, FirstName, LastName, Address, Phone);
+		return(response);
+	}
 
-				System.out.println( "\nRetrieving All Orders::" );
-				try
-				{
-					response = api.retrieveOrders();
-					System.out.println(response);
+	/********************************************************************************
+	 * Description: Deletes the order based on the id argument provided from the
+	 *              orderinfo database. Note that this method is serviced by the
+	 *			   DeleteServices server process.
+	 * Parameters: None
+	 * Returns: String that contains the status of the create operatation
+	 ********************************************************************************/
 
-				} catch (Exception e) {
+	public String deleteOrders(String id) throws Exception
+	{
+		// Get the registry entry for DeleteServices service
+		String entry = registry.getProperty("DeleteServices");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		DeleteServicesAI obj = (DeleteServicesAI )reg.lookup("DeleteServices");
+		response = obj.deleteOrders(id);
+		return(response);
 
-					System.out.println("Request failed:: " + e);
+	}
 
-				}
-
-				System.out.println("\nPress enter to continue..." );
-				c.readLine();
-
-			} // if
-
-			//////////// option 2 ////////////
-
-			if ( option == '2' )
-			{
-				// Here we get the order ID from the user
-
-				error = true;
-
-				while (error)
-				{
-					System.out.print( "\nEnter the order ID: " );
-					orderid = keyboard.nextLine();
-
-					try
-					{
-						Integer.parseInt(orderid);
-						error = false;
-					} catch (NumberFormatException e) {
-
-						System.out.println( "Not a number, please try again..." );
-						System.out.println("\nPress enter to continue..." );
-
-					} // if
-
-				} // while
-
-				try
-				{
-					response = api.retrieveOrders(orderid);
-					System.out.println(response);
-
-				} catch (Exception e) {
-
-					System.out.println("Request failed:: " + e);
-					
-				}
-
-				System.out.println("\nPress enter to continue..." );
-				c.readLine();
-
-			} // if
-
-			//////////// option 3 ////////////
-
-			if ( option == '3' )
-			{
-				// Here we create a new order entry in the database
-
-				dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-				localDate = LocalDate.now();
-				date = localDate.format(dtf);
-
-				System.out.println("Enter first name:");
-				first = keyboard.nextLine();
-
-				System.out.println("Enter last name:");
-				last = keyboard.nextLine();
-		
-				System.out.println("Enter address:");
-				address = keyboard.nextLine();
-
-				System.out.println("Enter phone:");
-				phone = keyboard.nextLine();
-
-				System.out.println("Creating the following order:");
-				System.out.println("==============================");
-				System.out.println(" Date:" + date);		
-				System.out.println(" First name:" + first);
-				System.out.println(" Last name:" + last);
-				System.out.println(" Address:" + address);
-				System.out.println(" Phone:" + phone);
-				System.out.println("==============================");					
-				System.out.println("\nPress 'y' to create this order:");
-
-				option = keyboard.next().charAt(0);
-
-				if (( option == 'y') || (option == 'Y'))
-				{
-					try
-					{
-						System.out.println("\nCreating order...");
-						response = api.newOrder(date, first, last, address, phone);
-						System.out.println(response);
-
-					} catch(Exception e) {
-
-						System.out.println("Request failed:: " + e);
-
-					}
-
-				} else {
-
-					System.out.println("\nOrder not created...");
-				}
-
-				System.out.println("\nPress enter to continue..." );
-				c.readLine();
-
-				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
-
-			} // if
-
-			//////////// option 2 ////////////
-
-			if ( option == '4' )
-			{
-				// Here we get the order ID from the user to delete
-
-				error = true;
-
-				while (error)
-				{
-					System.out.print( "\nEnter the order ID: " );
-					orderid = keyboard.nextLine();
-
-					try
-					{
-						Integer.parseInt(orderid);
-						error = false;
-					} catch (NumberFormatException e) {
-
-						System.out.println( "Not a number, please try again..." );
-						System.out.println("\nPress enter to continue..." );
-
-					} // if
-
-				} // while
-
-				try
-				{
-					response = api.retrieveOrders(orderid);
-					System.out.println(response);
-					response = api.deleteOrders(orderid);
-					System.out.println(response);
-
-				} catch (Exception e) {
-
-					System.out.println("Request failed:: " + e);
-
-				}
-
-				System.out.println("\nPress enter to continue..." );
-				c.readLine();
-
-			} // if
-
-
-			//////////// option X ////////////
-
-			if ( ( option == 'X' ) || ( option == 'x' ))
-			{
-				// Here the user is done, so we set the Done flag and halt the system
-
-				done = true;
-				System.out.println( "\nDone...\n\n" );
-
-			} // if
-
-		} // while
-
-  	} // main
-
-} // OrdersUI
+}
