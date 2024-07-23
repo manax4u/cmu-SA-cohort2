@@ -66,3 +66,11 @@ CREATE TABLE `userCredential` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 -- Dump completed on 2018-02-16 17:26:40
+INSERT INTO userCredential (user_name, password, role)
+VALUES ('manjunath', 'cmu@123', 'write');
+INSERT INTO userCredential (user_name, password, role)
+VALUES ('pramod', 'cmu@123', 'write');
+INSERT INTO userCredential (user_name, password, role)
+VALUES ('vishwanath', 'cmu@123', 'write');
+INSERT INTO userCredential (user_name, password, role)
+VALUES ('manav', 'cmu@123', 'write');
