@@ -34,7 +34,7 @@ var fs = require('fs');
 var util = require('util');
 
 // overriding console logging to output logs to a file
-var logFile = fs.createWriteStream('log.txt', { flags: 'w' });
+var logFile = fs.createWriteStream('./log.txt', { flags: 'w' });
 var logStdout = process.stdout;
 console.log = function () {
   logFile.write(util.format.apply(null, arguments) + '\n');
