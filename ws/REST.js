@@ -124,7 +124,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     router.delete("/orders/:order_id",function(req,res){
         const orderId = req.params.order_id;
         console.log('Request Type: ', req.method, ', Request: ', '/orders/', orderId);
-        console.log("Deleting order ID: ", req.params.order_id );
+        console.log("Deleting order ID: ", orderId );
         var query = "DELETE FROM ?? WHERE ??=?";
         var table = ["orders","order_id",orderId];
         query = mysql.format(query,table);
@@ -147,11 +147,11 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
     router.get("/authenticate/:userid",function(req,res){
         const userId = req.params.userid;
         console.log('Request Type: ', req.method, ', Request: ', '/authenticate/', userId);
-        console.log("Validating credentials: ", req.params.userid );
+        console.log("Validating credentials: ", userId );
         var query = "SELECT password FROM ?? WHERE ??=?";;
-        var table = ["userCredential","user_name",req.params.userid];
+        var table = ["userCredential","user_name",userId];
         query = mysql.format(query,table);
-        console.log('SQL query to delete order ID ', orderId, ' is: ', query);
+        console.log('SQL query to authenticate user ID ', userId, ' is: ', query);
         connection.query(query,function(err,rows){
             if(err) {
                 console.error('Error validating credentials from database: ', err);
