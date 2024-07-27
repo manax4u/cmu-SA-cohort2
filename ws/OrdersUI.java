@@ -29,6 +29,7 @@ public class OrdersUI
 	public static void main(String args[])
 	{
 		boolean done = false;						// main loop flag
+		boolean failed = false;                     // flag for authentication
 		boolean error = false;						// error flag
 		char    option;								// Menu choice from user
 		Console c = System.console();				// Press any key
@@ -50,38 +51,35 @@ public class OrdersUI
 		/////////////////////////////////////////////////////////////////////////////////
 		// Main UI loop
 		/////////////////////////////////////////////////////////////////////////////////
-
-		while (!done)
+		System.out.println( "\n\n" );
+		System.out.println( "Orders Database User Interface: \n" );
+		System.out.println( "Login: \n");
+		System.out.println( "Enter userid: ");
+		userid = keyboard.nextLine();
+		System.out.println( "Enter password: ");
+		password = keyboard.nextLine();
+		try
 		{
-			// Here, is the main menu set of choices
+			response = api.authenticateuser(userid, password);
 
-			System.out.println( "\n\n\n\n" );
-			System.out.println( "Orders Database User Interface: \n" );
-			System.out.println( "Login: \n");
-			System.out.println( "Enter userid: ");
-			userid = keyboard.nextLine();
-			System.out.println( "Enter password: ");
-			password = keyboard.nextLine();
-			try
+			if ( response.equals("unsuccessfull") )
 			{
-				response = api.authenticateuser(userid, password);
-
-				if ( response.equals("unsuccessfull") )
-				{
-					System.out.println("\nUserID/Password invalid!\n");
-					done = true;
-					System.out.println( "\nExiting...\n\n" );
-					continue;
-				}
-
-			} catch (Exception e) {
-
-				System.out.println("Authentication failed!! ");
-				done = true;
+				System.out.println("\nUserID/Password invalid!\n");
+				failed = true;
 				System.out.println( "\nExiting...\n\n" );
-				continue;
 			}
 
+		} catch (Exception e) {
+
+			System.out.println("Authentication failed!! ");
+			failed = true;
+			System.out.println( "\nExiting...\n\n" );
+		}
+
+		while (!failed && !done)
+		{
+			// Here, is the main menu set of choices
+			System.out.println( "\n\n" );
 			System.out.println( "\nSelect an Option: \n" );
 			System.out.println( "1: Retrieve all orders in the order database." );
 			System.out.println( "2: Retrieve an order by ID." );
