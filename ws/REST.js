@@ -99,7 +99,7 @@ REST_ROUTER.prototype.handleRoutes= function(router,connection) {
 
     router.post("/orders",function(req,res){
         //console.log("url:", req.url);
-        console.log('Request Type: ', req.method, 'Request: ', '/orders');
+        console.log('Request Type: ', req.method, ', Request: ', '/orders');
         console.log('Request Body: ', req.body);
         console.log("Adding to orders table ", req.body.order_date,",",req.body.first_name,",",req.body.last_name,",",req.body.address,",",req.body.phone);
         var query = "INSERT INTO ??(??,??,??,??,??) VALUES (?,?,?,?,?)";
