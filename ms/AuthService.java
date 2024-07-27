@@ -2,7 +2,7 @@ import java.sql.*;
 
 public class AuthService {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/ms_orderinfo";
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/ms_orderinfo?autoReconnect=true&useSSL=false";
     private static final String USER = "root";
     private static final String PASS = "test";
     private static final String JDBC_CONNECTOR = "com.mysql.jdbc.Driver";
