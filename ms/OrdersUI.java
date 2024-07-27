@@ -27,53 +27,81 @@ import java.io.Console;
 
 public class OrdersUI
 {
-	public static void main(String args[]) throws Exception
-	{
-		boolean done = false;						// main loop flag
-		boolean error = false;						// error flag
-		char    option;								// Menu choice from user
-		Console c = System.console();				// Press any key
-		String  date = null;						// order date
-		String  first = null;						// customer first name
-		String  last = null;						// customer last name
-		String  address = null;						// customer address
-		String  phone = null;						// customer phone number
-		String  orderid = null;						// order ID
-		String 	response = null;					// response string from REST 
-		Scanner keyboard = new Scanner(System.in);	// keyboard scanner object for user input
-		DateTimeFormatter dtf = null;				// Date object formatter
-		LocalDate localDate = null;					// Date object
-		MSClientAPI api = new MSClientAPI();	// RESTful api object
+	private static boolean authenticated = false;
+	private static String currentUser = null;
+	private static AuthService authService;
+	public static void main(String args[]) throws Exception {
+
+		boolean done = false;                        // main loop flag
+		boolean error = false;                        // error flag
+		char option;                                // Menu choice from user
+		Console c = System.console();                // Press any key
+		String date = null;                        // order date
+		String first = null;                        // customer first name
+		String last = null;                        // customer last name
+		String address = null;                        // customer address
+		String phone = null;                        // customer phone number
+		String orderid = null;                        // order ID
+		String response = null;                    // response string from REST
+		Scanner keyboard = new Scanner(System.in);    // keyboard scanner object for user input
+		DateTimeFormatter dtf = null;                // Date object formatter
+		LocalDate localDate = null;                    // Date object
+		MSClientAPI api = new MSClientAPI();
+		authService = new AuthService();// RESTful api object
+
 
 		/////////////////////////////////////////////////////////////////////////////////
 		// Main UI loop
 		/////////////////////////////////////////////////////////////////////////////////
 
-		while (!done)
-		{	
+		while (!done) {
 			// Here, is the main menu set of choices
 
-			System.out.println( "\n\n\n\n" );
-			System.out.println( "Orders Database User Interface: \n" );
-			System.out.println( "Select an Option: \n" );
-			System.out.println( "1: Retrieve all orders in the order database." );
-			System.out.println( "2: Retrieve an order by ID." );
-			System.out.println( "3: Add a new order to the order database." );				
-			System.out.println( "X: Exit\n" );
-			System.out.print( "\n>>>> " );
-			option = keyboard.next().charAt(0);	
-			keyboard.nextLine();	// Removes data from keyboard buffer. If you don't clear the buffer, you blow 
-									// through the next call to nextLine()
+			if (!authenticated) {
+				// Prompt for login or registration
+				System.out.println("Please log in or register:");
+				System.out.println("1: Log In");
+				System.out.println("2: Register");
+				System.out.print(">>>> ");
+				option = keyboard.next().charAt(0);
+				keyboard.nextLine(); // Clear buffer
+
+				switch (option) {
+					case '1':
+						login(keyboard);
+						break;
+					case '2':
+						register(keyboard);
+						break;
+					default:
+						System.out.println("Invalid option. Try again.");
+				}
+
+				if (!authenticated) {
+					System.out.println("Login/Registration failed. Try again.");
+					continue; // Prompt login/registration again
+				}
+			}
+
+			System.out.println("\n\n\n\n");
+			System.out.println("Orders Database User Interface: \n");
+			System.out.println("Select an Option: \n");
+			System.out.println("1: Retrieve all orders in the order database.");
+			System.out.println("2: Retrieve an order by ID.");
+			System.out.println("3: Add a new order to the order database.");
+			System.out.println("X: Exit\n");
+			System.out.print("\n>>>> ");
+			option = keyboard.next().charAt(0);
+			keyboard.nextLine();    // Removes data from keyboard buffer. If you don't clear the buffer, you blow
+			// through the next call to nextLine()
 
 			//////////// option 1 ////////////
 
-			if ( option == '1' )
-			{
+			if (option == '1') {
 				// Here we retrieve all the orders in the ms_orderinfo database
 
-				System.out.println( "\nRetrieving All Orders::" );
-				try
-				{
+				System.out.println("\nRetrieving All Orders::");
+				try {
 					response = api.retrieveOrders();
 					System.out.println(response);
 
@@ -83,57 +111,52 @@ public class OrdersUI
 
 				}
 
-				System.out.println("\nPress enter to continue..." );
+				System.out.println("\nPress enter to continue...");
 				c.readLine();
 
 			} // if
 
 			//////////// option 2 ////////////
 
-			if ( option == '2' )
-			{
+			if (option == '2') {
 				// Here we get the order ID from the user
 
 				error = true;
 
-				while (error)
-				{
-					System.out.print( "\nEnter the order ID: " );
+				while (error) {
+					System.out.print("\nEnter the order ID: ");
 					orderid = keyboard.nextLine();
 
-					try
-					{
+					try {
 						Integer.parseInt(orderid);
 						error = false;
 					} catch (NumberFormatException e) {
 
-						System.out.println( "Not a number, please try again..." );
-						System.out.println("\nPress enter to continue..." );
+						System.out.println("Not a number, please try again...");
+						System.out.println("\nPress enter to continue...");
 
 					} // if
 
 				} // while
 
-				try
-				{
+				try {
 					response = api.retrieveOrders(orderid);
 					System.out.println(response);
 
 				} catch (Exception e) {
 
 					System.out.println("Request failed:: " + e);
-					
+
 				}
 
-				System.out.println("\nPress enter to continue..." );
+				System.out.println("\nPress enter to continue...");
 				c.readLine();
 
 			} // if
 
 			//////////// option 3 ////////////
 
-			if ( option == '3' )
-			{
+			if (option == '3') {
 				// Here we create a new order entry in the database
 
 				dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -145,7 +168,7 @@ public class OrdersUI
 
 				System.out.println("Enter last name:");
 				last = keyboard.nextLine();
-		
+
 				System.out.println("Enter address:");
 				address = keyboard.nextLine();
 
@@ -154,25 +177,23 @@ public class OrdersUI
 
 				System.out.println("Creating the following order:");
 				System.out.println("==============================");
-				System.out.println(" Date:" + date);		
+				System.out.println(" Date:" + date);
 				System.out.println(" First name:" + first);
 				System.out.println(" Last name:" + last);
 				System.out.println(" Address:" + address);
 				System.out.println(" Phone:" + phone);
-				System.out.println("==============================");					
+				System.out.println("==============================");
 				System.out.println("\nPress 'y' to create this order:");
 
 				option = keyboard.next().charAt(0);
 
-				if (( option == 'y') || (option == 'Y'))
-				{
-					try
-					{
+				if ((option == 'y') || (option == 'Y')) {
+					try {
 						System.out.println("\nCreating order...");
 						response = api.newOrder(date, first, last, address, phone);
 						System.out.println(response);
 
-					} catch(Exception e) {
+					} catch (Exception e) {
 
 						System.out.println("Request failed:: " + e);
 
@@ -183,7 +204,7 @@ public class OrdersUI
 					System.out.println("\nOrder not created...");
 				}
 
-				System.out.println("\nPress enter to continue..." );
+				System.out.println("\nPress enter to continue...");
 				c.readLine();
 
 				option = ' '; //Clearing option. This incase the user enterd X/x the program will not exit.
@@ -192,17 +213,56 @@ public class OrdersUI
 
 			//////////// option X ////////////
 
-			if ( ( option == 'X' ) || ( option == 'x' ))
-			{
+			if ((option == 'X') || (option == 'x')) {
 				// Here the user is done, so we set the Done flag and halt the system
 
 				done = true;
-				System.out.println( "\nDone...\n\n" );
+				System.out.println("\nDone...\n\n");
 
 			} // if
 
 		} // while
+	}
 
-  	} // main
+	  // main
+	  private static void login(Scanner keyboard) {
+		  System.out.print("Enter username: ");
+		  String username = keyboard.nextLine();
+		  System.out.print("Enter password: ");
+		  String password = new String(System.console().readPassword());
+
+		  try {
+			  authenticated = authService.authenticate(username, password);
+			  if (authenticated) {
+				  currentUser = username;
+				  System.out.println("Login successful.");
+			  } else {
+				  System.out.println("Invalid username or password.");
+			  }
+		  } catch (Exception e) {
+			  System.out.println("Login failed: " + e.getMessage());
+		  }
+	  }
+	private static void register(Scanner keyboard) {
+		System.out.print("Enter username: ");
+		String username = keyboard.nextLine();
+		System.out.print("Enter password: ");
+		String password = new String(System.console().readPassword());
+		System.out.print("Enter role: ");
+		String role = keyboard.nextLine();
+
+		try {
+			boolean success = authService.register(username, password, role);
+			if (success) {
+				currentUser = username;
+				authenticated = true;
+				System.out.println("Registration successful. You are now logged in.");
+			} else {
+				System.out.println("Registration failed. Username might already exist.");
+			}
+		} catch (Exception e) {
+			System.out.println("Registration failed: " + e.getMessage());
+		}
+	}
 
 } // OrdersUI

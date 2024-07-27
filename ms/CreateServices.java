@@ -19,10 +19,15 @@
 *	= MySQL
 	- orderinfo database 
 ******************************************************************************************************************/
-import java.rmi.RemoteException; 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.sql.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class CreateServices extends UnicastRemoteObject implements CreateServicesAI
 { 
@@ -80,6 +85,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
         Statement stmt = null;		                 // A Statement object is an interface that represents a SQL statement.
         String ReturnString = "Order Created";	     // Return string. If everything works you get an 'OK' message
         							                 // if not you get an error string
+        LogUtil.log("Creating the new Order !");
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -119,5 +125,6 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
         return(ReturnString);
 
     } //retrieve all orders
+
 
 } // RetrieveServices

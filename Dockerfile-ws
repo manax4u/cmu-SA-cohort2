@@ -1,4 +1,4 @@
-from node:10
+from node:18
 ARG MYSQL_PASSWORD
 WORKDIR /usr/app
 RUN npm install express 
@@ -8,9 +8,10 @@ RUN npm -y init
 
 COPY ws/REST.js ws/
 COPY ws/Server.js ws/
+COPY ws/logger.js ws/
 COPY ws/config ws/config
 WORKDIR /usr/app/ws
-RUN sed "s/<PASSWORD>/${MYSQL_PASSWORD}/g" > config/mysql.config.json < config/mysql.config.json-tmplt
+RUN mkdir -p logs && sed "s/<PASSWORD>/${MYSQL_PASSWORD}/g" > config/mysql.config.json < config/mysql.config.json-tmplt
 RUN mv ../package.json .
 RUN npm install
 

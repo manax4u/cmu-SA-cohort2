@@ -36,7 +36,8 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
     static final String PASS = Configuration.MYSQL_PASSWORD;
 
     // Do nothing constructor
-    public RetrieveServices() throws RemoteException {}
+    public RetrieveServices() throws RemoteException {
+    }
 
     // Main service loop
     public static void main(String args[]) 
@@ -73,12 +74,13 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
 
     public String retrieveOrders() throws RemoteException
     {
-      	// Local declarations
+
 
         Connection conn = null;		// connection to the orderinfo database
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
         String ReturnString = "[";	// Return string. If everything works you get an ordered pair of data
         							// if not you get an error string
+        LogUtil.log("Retrieving the orders !");
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -152,6 +154,7 @@ public class RetrieveServices extends UnicastRemoteObject implements RetrieveSer
     public String retrieveOrders(String orderid) throws RemoteException
     {
       	// Local declarations
+        LogUtil.log("Retrieving order with ID: " + orderid);
 
         Connection conn = null;		// connection to the orderinfo database
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
