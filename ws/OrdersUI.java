@@ -76,7 +76,7 @@ public class OrdersUI
 
 			} catch (Exception e) {
 
-				System.out.println("Authentication failed:: " + e);
+				System.out.println("Authentication failed!! ");
 				done = true;
 				System.out.println( "\nExiting...\n\n" );
 				continue;
