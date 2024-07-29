@@ -7,7 +7,7 @@ import java.util.logging.SimpleFormatter;
 public class LogUtil {
 
     private static final Logger logger = Logger.getLogger(LogUtil.class.getName());
-    private static final String LOG_FILE = "/usr/app/logs/service.log";
+    private static final String LOG_FILE = "ms.log";
 
     static {
         try {

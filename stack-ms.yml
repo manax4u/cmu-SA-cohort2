@@ -39,7 +39,7 @@ services:
       context: .
       dockerfile: Dockerfile-ds
       args:
-        MYSQL_PASSWORD: foo
+        MYSQL_PASSWORD: test
     depends_on:
       - mysql
     environment:
@@ -47,6 +47,34 @@ services:
       RMI_REMOTE_PORT: 1097
       MYSQL_REMOTE_HOST: ms_mysql
       MYSQL_REMOTE_PORT: 3306
+
+  auth:
+    image: ms_auth
+    container_name: ms_auth
+    build:
+      context: .
+      dockerfile: Dockerfile-auth
+      args:
+        MYSQL_PASSWORD: test
+    depends_on:
+      - mysql
+    environment:
+      RMI_REMOTE_HOST: ms_auth
+      RMI_REMOTE_PORT: 1100
+      MYSQL_REMOTE_HOST: ms_mysql
+      MYSQL_REMOTE_PORT: 3306
+
+  log:
+    image: ms_log
+    container_name: ms_log
+    build:
+      context: .
+      dockerfile: Dockerfile-ls
+      args:
+        MYSQL_PASSWORD: test
+    environment:
+      RMI_REMOTE_HOST: ms_log
+      RMI_REMOTE_PORT: 1101
 
   client:
     image: ms_client
@@ -60,6 +88,7 @@ services:
     environment:
       RMI_REMOTE_HOST: ms_server
       RMI_REMOTE_PORT: 1099
+
 
   mysql:
     image: mysql:5.7

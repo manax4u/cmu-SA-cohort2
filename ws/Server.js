@@ -30,6 +30,18 @@ var mysql   = require("mysql");               //Database
 var bodyParser  = require("body-parser");     //Javascript parser utility
 var rest = require("./REST.js");              //REST services/handler module
 var app  = express();                         //express instance
+var fs = require('fs');
+var util = require('util');
+
+// overriding console logging to output logs to a file
+var logFile = fs.createWriteStream('log.txt', { flags: 'w' });
+var logStdout = process.stdout;
+console.log = function () {
+  logFile.write(util.format.apply(null, arguments) + '\n');
+  logStdout.write(util.format.apply(null, arguments) + '\n');
+}
+console.error = console.log;
+/////////
 
 // Function definition
 function REST(){
@@ -50,8 +62,10 @@ REST.prototype.connectMysql = function() {
 
     pool.getConnection(function(err,connection) {
         if(err) {
+          console.error("Issue connecting with mysql and/or connecting to the database.\n", err);  
           self.stop(err);
         } else {
+          console.log("Connection with mysql and/or to the database successful.\n");  
           self.configureExpress(connection);
         }
     });
@@ -84,7 +98,7 @@ REST.prototype.startServer = function() {
 // We land here if we can't connect to mysql
 
 REST.prototype.stop = function(err) {
-    console.log("Issue connecting with mysql and/or connecting to the database.\n" + err);
+    console.log("Issue connecting with mysql and/or connecting to the database.\n", err);
     process.exit(1);
 }
 

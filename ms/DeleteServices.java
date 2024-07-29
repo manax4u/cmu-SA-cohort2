@@ -24,9 +24,11 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.sql.*;
+import java.util.logging.Level;
 
 public class DeleteServices extends UnicastRemoteObject implements DeleteServicesAI
 {
+
     // Set up the JDBC driver name and database URL
     static final String JDBC_CONNECTOR = "com.mysql.jdbc.Driver";
     static final String DB_URL = Configuration.getJDBCConnection();
@@ -34,6 +36,8 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     // Do nothing constructor
     public DeleteServices() throws RemoteException {}
@@ -71,14 +75,14 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
 
     // This method will return all the entries in the orderinfo database
 
-    public String deleteOrders() throws RemoteException
+    public String deleteOrders(String currentUser) throws RemoteException
     {
         // Local declarations
 
         Connection conn = null;		// connection to the orderinfo database
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
         String ReturnString = "[";	// Return string. If everything works you get an ordered pair of data
-        LogUtil.log("Deleting the order !");
+        logger.log(Level.INFO.getName(), "Deleting Orders as user: "+currentUser);
         // if not you get an error string
         try
         {
@@ -113,7 +117,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             conn.close();
 
         } catch(Exception e) {
-
+            logger.log(Level.SEVERE.getName(), "Error deleting order: " + e);
             ReturnString = e.toString();
         }
 
@@ -124,15 +128,15 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
     // This method will returns the order in the orderinfo database corresponding to the id
     // provided in the argument.
 
-    public String deleteOrders(String orderid) throws RemoteException
+    public String deleteOrders(String orderid, String currentUser) throws RemoteException
     {
         // Local declarations
 
         Connection conn = null;		// connection to the orderinfo database
         Statement stmt = null;		// A Statement object is an interface that represents a SQL statement.
-        String ReturnString = "Record deleted!";	// Return string. If everything works you get an ordered pair of data
+        String ReturnString = "Order deleted!";	// Return string. If everything works you get an ordered pair of data
         // if not you get an error string
-        LogUtil.log("Deleting orders !");
+        logger.log(Level.INFO.getName(), "Deleting Order: " + orderid+" as user: "+currentUser);
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -153,7 +157,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             stmt = conn.createStatement();
 
             String sql;
-            sql = "DELETE FROM orders where order_id=" + orderid;
+            sql = "delete FROM orders where order_id=" + orderid;
 
             // execute the update
 
@@ -167,6 +171,7 @@ public class DeleteServices extends UnicastRemoteObject implements DeleteService
             conn.close();
 
         } catch(Exception e) {
+            logger.log(Level.SEVERE.getName(), "Error deleting order: " +orderid+", "+ e);
 
             ReturnString = e.toString();
 

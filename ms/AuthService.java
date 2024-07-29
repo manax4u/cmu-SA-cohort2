@@ -1,11 +1,39 @@
+import java.rmi.RemoteException;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
 
-public class AuthService {
+public class AuthService extends UnicastRemoteObject implements AuthServiceAI {
 
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/ms_orderinfo?autoReconnect=true&useSSL=false";
-    private static final String USER = "root";
-    private static final String PASS = "test";
-    private static final String JDBC_CONNECTOR = "com.mysql.jdbc.Driver";
+    // Set up the JDBC driver name and database URL
+    static final String JDBC_CONNECTOR = "com.mysql.jdbc.Driver";
+    static final String DB_URL = Configuration.getJDBCConnection();
+
+    // Set up the orderinfo database credentials
+    static final String USER = "root";
+    static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    protected AuthService() throws RemoteException {
+    }
+
+    public static void main(String[] args) {
+        try {
+            AuthService authService = new AuthService();
+
+            Registry registry = Configuration.createRegistry();
+            registry.bind("AuthService", authService);
+
+            String[] boundNames = registry.list();
+            System.out.println("Registered services:");
+            for (String name : boundNames) {
+                System.out.println("\t" + name);
+            }
+
+        } catch (Exception e) {
+            System.out.println("AuthService binding error: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
 
     public boolean authenticate(String username, String password) {
@@ -13,10 +41,16 @@ public class AuthService {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         boolean authenticated = false;
-
         try {
+
+            System.out.println(JDBC_CONNECTOR+", "+DB_URL+", "+USER+", "+PASS);
+
             Class.forName(JDBC_CONNECTOR);
-            conn = DriverManager.getConnection(DB_URL, USER, PASS);
+
+            //Open the connection to the orderinfo database
+
+            //System.out.println("Connecting to database...");
+            conn = DriverManager.getConnection(DB_URL,USER,PASS);
             String query = "SELECT * FROM userCredential WHERE user_name=? AND password=?";
             stmt = conn.prepareStatement(query);
             stmt.setString(1, username);

@@ -24,12 +24,12 @@ import java.util.Scanner;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.io.Console;
+import java.util.logging.Level;
 
 public class OrdersUI
 {
 	private static boolean authenticated = false;
 	private static String currentUser = null;
-	private static AuthService authService;
 	public static void main(String args[]) throws Exception {
 
 		boolean done = false;                        // main loop flag
@@ -47,7 +47,7 @@ public class OrdersUI
 		DateTimeFormatter dtf = null;                // Date object formatter
 		LocalDate localDate = null;                    // Date object
 		MSClientAPI api = new MSClientAPI();
-		authService = new AuthService();// RESTful api object
+		LoggerClient logger = new LoggerClient();
 
 
 		/////////////////////////////////////////////////////////////////////////////////
@@ -68,10 +68,10 @@ public class OrdersUI
 
 				switch (option) {
 					case '1':
-						login(keyboard);
+						login(keyboard, api,logger);
 						break;
 					case '2':
-						register(keyboard);
+						register(keyboard, api,logger);
 						break;
 					default:
 						System.out.println("Invalid option. Try again.");
@@ -83,12 +83,13 @@ public class OrdersUI
 				}
 			}
 
-			System.out.println("\n\n\n\n");
+			System.out.println("\n\n");
 			System.out.println("Orders Database User Interface: \n");
 			System.out.println("Select an Option: \n");
 			System.out.println("1: Retrieve all orders in the order database.");
 			System.out.println("2: Retrieve an order by ID.");
 			System.out.println("3: Add a new order to the order database.");
+			System.out.println("4: Delete an order in the order database.");
 			System.out.println("X: Exit\n");
 			System.out.print("\n>>>> ");
 			option = keyboard.next().charAt(0);
@@ -102,7 +103,7 @@ public class OrdersUI
 
 				System.out.println("\nRetrieving All Orders::");
 				try {
-					response = api.retrieveOrders();
+					response = api.retrieveOrders(currentUser);
 					System.out.println(response);
 
 				} catch (Exception e) {
@@ -140,7 +141,7 @@ public class OrdersUI
 				} // while
 
 				try {
-					response = api.retrieveOrders(orderid);
+					response = api.retrieveOrders(orderid,currentUser);
 					System.out.println(response);
 
 				} catch (Exception e) {
@@ -190,7 +191,7 @@ public class OrdersUI
 				if ((option == 'y') || (option == 'Y')) {
 					try {
 						System.out.println("\nCreating order...");
-						response = api.newOrder(date, first, last, address, phone);
+						response = api.newOrder(date, first, last, address, phone,currentUser);
 						System.out.println(response);
 
 					} catch (Exception e) {
@@ -211,6 +212,42 @@ public class OrdersUI
 
 			} // if
 
+			if (option == '4') {
+				// Here we get the order ID from the user
+
+				error = true;
+
+				while (error) {
+					System.out.print("\nEnter the order ID: ");
+					orderid = keyboard.nextLine();
+
+					try {
+						Integer.parseInt(orderid);
+						error = false;
+					} catch (NumberFormatException e) {
+
+						System.out.println("Not a number, please try again...");
+						System.out.println("\nPress enter to continue...");
+
+					} // if
+
+				} // while
+
+				try {
+					response = api.deleteOrders(orderid,currentUser);
+					System.out.println(response);
+
+				} catch (Exception e) {
+
+					System.out.println("Request failed:: " + e);
+
+				}
+
+				System.out.println("\nPress enter to continue...");
+				c.readLine();
+
+			}
+
 			//////////// option X ////////////
 
 			if ((option == 'X') || (option == 'x')) {
@@ -225,25 +262,27 @@ public class OrdersUI
 	}
 
 	  // main
-	  private static void login(Scanner keyboard) {
+	  private static void login(Scanner keyboard, MSClientAPI api, LoggerClient logger) {
 		  System.out.print("Enter username: ");
 		  String username = keyboard.nextLine();
 		  System.out.print("Enter password: ");
 		  String password = new String(System.console().readPassword());
 
 		  try {
-			  authenticated = authService.authenticate(username, password);
+			  authenticated = api.authenticate(username, password);
 			  if (authenticated) {
 				  currentUser = username;
-				  System.out.println("Login successful.");
+				  logger.log(Level.INFO.getName(), "Login Successful for "+currentUser);
+
+
 			  } else {
-				  System.out.println("Invalid username or password.");
+				  logger.log(Level.INFO.getName(),"Invalid username or password.");
 			  }
 		  } catch (Exception e) {
-			  System.out.println("Login failed: " + e.getMessage());
+			  logger.log(Level.SEVERE.getName()," Login failed: " + e.getMessage());
 		  }
 	  }
-	private static void register(Scanner keyboard) {
+	private static void register(Scanner keyboard, MSClientAPI api, LoggerClient logger) {
 		System.out.print("Enter username: ");
 		String username = keyboard.nextLine();
 		System.out.print("Enter password: ");
@@ -252,16 +291,16 @@ public class OrdersUI
 		String role = keyboard.nextLine();
 
 		try {
-			boolean success = authService.register(username, password, role);
+			boolean success = api.register(username, password, role);
 			if (success) {
 				currentUser = username;
 				authenticated = true;
-				System.out.println("Registration successful. You are now logged in.");
+				logger.log(Level.INFO.getName(),"Registration successful. You are now logged in as "+currentUser);
 			} else {
-				System.out.println("Registration failed. Username might already exist.");
+				logger.log(Level.INFO.getName(),"Registration failed. Username might already exist.");
 			}
 		} catch (Exception e) {
-			System.out.println("Registration failed: " + e.getMessage());
+			logger.log(Level.SEVERE.getName(),"Registration failed: " + e.getMessage());
 		}
 	}
 
