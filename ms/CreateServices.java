@@ -19,10 +19,15 @@
 *	= MySQL
 	- orderinfo database 
 ******************************************************************************************************************/
-import java.rmi.RemoteException; 
+import java.io.IOException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.rmi.registry.Registry;
 import java.sql.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 
 public class CreateServices extends UnicastRemoteObject implements CreateServicesAI
 { 
@@ -33,6 +38,8 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
     // Set up the orderinfo database credentials
     static final String USER = "root";
     static final String PASS = Configuration.MYSQL_PASSWORD;
+
+    private LoggerClient logger = new LoggerClient();
 
     // Do nothing constructor
     public CreateServices() throws RemoteException {}
@@ -72,7 +79,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
 
     // This method add the entry into the ms_orderinfo database
 
-    public String newOrder(String idate, String ifirst, String ilast, String iaddress, String iphone) throws RemoteException
+    public String newOrder(String idate, String ifirst, String ilast, String iaddress, String iphone, String currentUser) throws RemoteException
     {
       	// Local declarations
 
@@ -80,6 +87,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
         Statement stmt = null;		                 // A Statement object is an interface that represents a SQL statement.
         String ReturnString = "Order Created";	     // Return string. If everything works you get an 'OK' message
         							                 // if not you get an error string
+        logger.log(Level.INFO.getName(), "Creating new Order as user : "+currentUser);
         try
         {
             // Here we load and initialize the JDBC connector. Essentially a static class
@@ -91,6 +99,7 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
 
             //System.out.println("Connecting to database...");
             conn = DriverManager.getConnection(DB_URL,USER,PASS);
+            System.out.println(JDBC_CONNECTOR+", "+DB_URL+", "+USER+", "+PASS);
 
             // Here we create the queery Execute a query. Not that the Statement class is part
             // of the Java.rmi.* package that enables you to submit SQL queries to the database
@@ -113,11 +122,13 @@ public class CreateServices extends UnicastRemoteObject implements CreateService
 
         } catch(Exception e) {
 
+            logger.log(Level.SEVERE.getName(), "ERROR Creating new Order: " + e);
             ReturnString = e.toString();
         } 
         
         return(ReturnString);
 
     } //retrieve all orders
+
 
 } // RetrieveServices

@@ -51,7 +51,7 @@ public class MSClientAPI
 	 * Returns: String of all the current orders in the orderinfo database
 	 ********************************************************************************/
 
-	public String retrieveOrders() throws Exception
+	public String retrieveOrders(String currentUser) throws Exception
 	{
 		// Get the registry entry for RetrieveServices service
 		String entry = registry.getProperty("RetrieveServices");
@@ -60,7 +60,7 @@ public class MSClientAPI
 		// Get the RMI registry
 		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
 		RetrieveServicesAI obj = (RetrieveServicesAI )reg.lookup("RetrieveServices");
-		response = obj.retrieveOrders();
+		response = obj.retrieveOrders(currentUser);
 		return response;
 	}
 
@@ -73,7 +73,7 @@ public class MSClientAPI
 	 *          in the orderinfo database.
 	 ********************************************************************************/
 
-	public String retrieveOrders(String id) throws Exception
+	public String retrieveOrders(String id, String currentUser) throws Exception
 	{
 		// Get the registry entry for RetrieveServices service
 		String entry = registry.getProperty("RetrieveServices");
@@ -82,7 +82,7 @@ public class MSClientAPI
 		// Get the RMI registry
 		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
 		RetrieveServicesAI obj = (RetrieveServicesAI )reg.lookup("RetrieveServices");
-		response = obj.retrieveOrders(id);
+		response = obj.retrieveOrders(id, currentUser);
 		return(response);
 
 	}
@@ -93,7 +93,7 @@ public class MSClientAPI
 	 * Returns: String that contains the status of the create operatation
 	 ********************************************************************************/
 
-	public String newOrder(String Date, String FirstName, String LastName, String Address, String Phone) throws Exception
+	public String newOrder(String Date, String FirstName, String LastName, String Address, String Phone, String currentUser) throws Exception
 	{
 		// Get the registry entry for CreateServices service
 		String entry = registry.getProperty("CreateServices");
@@ -102,7 +102,7 @@ public class MSClientAPI
 		// Get the RMI registry
 		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
 		CreateServicesAI obj = (CreateServicesAI) reg.lookup("CreateServices");
-		response = obj.newOrder(Date, FirstName, LastName, Address, Phone);
+		response = obj.newOrder(Date, FirstName, LastName, Address, Phone, currentUser);
 		return(response);
 	}
 
@@ -114,7 +114,7 @@ public class MSClientAPI
 	 * Returns: String that contains the status of the create operatation
 	 ********************************************************************************/
 
-	public String deleteOrders(String id) throws Exception
+	public String deleteOrders(String id, String currentUser) throws Exception
 	{
 		// Get the registry entry for DeleteServices service
 		String entry = registry.getProperty("DeleteServices");
@@ -123,9 +123,39 @@ public class MSClientAPI
 		// Get the RMI registry
 		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
 		DeleteServicesAI obj = (DeleteServicesAI )reg.lookup("DeleteServices");
-		response = obj.deleteOrders(id);
+		response = obj.deleteOrders(id,currentUser);
 		return(response);
 
 	}
+
+	public boolean authenticate(String username,String password) throws Exception
+	{
+		// Get the registry entry for CreateServices service
+		String entry = registry.getProperty("AuthService");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		AuthServiceAI obj = (AuthServiceAI) reg.lookup("AuthService");
+
+		boolean response = obj.authenticate(username, password);
+		return(response);
+
+	}
+	public boolean register(String username,String  password, String role) throws Exception
+	{
+		// Get the registry entry for CreateServices service
+		String entry = registry.getProperty("AuthService");
+		String host = entry.split(":")[0];
+		String port = entry.split(":")[1];
+		// Get the RMI registry
+		Registry reg = LocateRegistry.getRegistry(host, Integer.parseInt(port));
+		AuthServiceAI obj = (AuthServiceAI) reg.lookup("AuthService");
+
+		boolean response = obj.register(username, password,role);
+		return(response);
+
+	}
+
 
 }

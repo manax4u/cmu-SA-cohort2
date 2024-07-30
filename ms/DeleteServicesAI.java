@@ -33,7 +33,7 @@ public interface DeleteServicesAI extends java.rmi.Remote
      * format.
      *******************************************************/
 
-    String deleteOrders() throws RemoteException;
+    String deleteOrders(String currentUser) throws RemoteException;
 
     /*******************************************************
      * Deletes the order corresponding to the order id in
@@ -42,5 +42,5 @@ public interface DeleteServicesAI extends java.rmi.Remote
      * pairs format.
      *******************************************************/
 
-    String deleteOrders(String id ) throws RemoteException;
+    String deleteOrders(String id,String currentUser ) throws RemoteException;
 }
